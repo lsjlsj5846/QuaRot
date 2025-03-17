@@ -15,7 +15,7 @@ def evaluator(model, testenc, dev, args):
     if 'opt' in args.model:
         opt_type = True
         llama_type = False
-    elif 'meta' in args.model:
+    elif 'llama' in args.model:
         llama_type = True
         opt_type = False
     else:
@@ -37,6 +37,7 @@ def evaluator(model, testenc, dev, args):
     elif llama_type:
         layers = model.model.layers
         model.model.embed_tokens = model.model.embed_tokens.to(dev)
+        model.model.rotary_emb = model.model.rotary_emb.to(dev)
 
     layers[0] = layers[0].to(dev)
 
@@ -65,7 +66,7 @@ def evaluator(model, testenc, dev, args):
             cache['i'] += 1
             cache['attention_mask'] = kwargs['attention_mask']
             if llama_type:
-                cache['position_ids'] = kwargs['position_ids']
+                cache['position_embeddings'] = kwargs['position_embeddings']
             raise ValueError
     layers[0] = Catcher(layers[0])
    
@@ -87,7 +88,8 @@ def evaluator(model, testenc, dev, args):
             model.model.decoder.project_in = model.model.decoder.project_in.cpu()
     elif llama_type:
         model.model.embed_tokens = model.model.embed_tokens.cpu()
-        position_ids = cache['position_ids']
+        model.model.rotary_emb = model.model.rotary_emb.cpu()
+        position_embeddings = cache['position_embeddings']
 
     torch.cuda.empty_cache()
     outs = [0] * nbatches
@@ -108,7 +110,7 @@ def evaluator(model, testenc, dev, args):
             if opt_type:
                 outs[j] = layer(inps[j], attention_mask=attention_mask)[0]
             elif llama_type:
-                outs[j] = layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)[0]
+                outs[j] = layer(inps[j], attention_mask=attention_mask, position_embeddings=position_embeddings)[0]
         layers[i] = layer.cpu()
         del layer
         torch.cuda.empty_cache()
