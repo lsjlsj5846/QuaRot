@@ -11,14 +11,14 @@ import logging
 from accelerate import dispatch_model, infer_auto_device_map
 from accelerate.utils import get_balanced_memory
 
-supported_models = [
-            'meta-llama/Llama-2-7b-hf',
-            'meta-llama/Llama-2-13b-hf',
-            'meta-llama/Llama-2-70b-hf',
-            'meta-llama/Meta-Llama-3-8B',
-            'meta-llama/Meta-Llama-3-70B',
-            'facebook/opt-125m'
-            ]
+# supported_models = [
+#             'meta-llama/Llama-2-7b-hf',
+#             'meta-llama/Llama-2-13b-hf',
+#             'meta-llama/Llama-2-70b-hf',
+#             'meta-llama/Meta-Llama-3-8B',
+#             'meta-llama/Meta-Llama-3-70B',
+#             'facebook/opt-125m'
+#             ]
 supported_datasets = ['wikitext2', 'ptb', 'c4']
 
 # These flags disable using TensorFloat-32 tensor cores (to avoid numerical issues)
@@ -73,7 +73,8 @@ def parser_gen():
 
     # General Arguments
     parser.add_argument('--model', type=str, default='meta-llama/Llama-2-7b-hf',
-                        help='Model to load;', choices=supported_models)
+                        help='Model to load;')
+                        # help='Model to load;', choices=supported_models) 
     parser.add_argument('--seed', type=int, default=0, help='Random Seed for HuggingFace and PyTorch')
     parser.add_argument('--eval_dataset', type=str, default='wikitext2',
                         help='Dataset for Evaluation (default: wikitext2)', choices=supported_datasets,)
@@ -169,6 +170,7 @@ def parser_gen():
     #Experiments Arguments
     parser.add_argument('--save_name', type=str, default=None, help='The path to save experiment data, '
                                                                     'including quantized models, dumped layer inputs, etc. The data will be saved in experiments/[model]/save_name. Default: [datetime].')
+    parser.add_argument('--save_path', type=str, default="./log", help="The dir path to save experiment data")
     parser.add_argument('--capture_layer_io', action=argparse.BooleanOptionalAction, default=False,
                         help='Capture the input and output of the specified decoder layer and dump into a file')
     parser.add_argument('--layer_idx', type=int, default=10, help='Which decoder layer to capture')
@@ -187,6 +189,12 @@ def parser_gen():
         help="Distribute the model on multiple GPUs for evaluation.",
     )
 
+    parser.add_argument(
+        "--target_module",
+        type=str,
+        default="",
+    )
+
     args = parser.parse_args()
     if args.lm_eval:
         from lm_eval import tasks
@@ -200,9 +208,12 @@ def parser_gen():
     # quant_type = f'w{args.w_bits}a{args.a_bits}_{args.rotate_mode}'
     if args.save_name is None:
         args.save_name = datetime.now().strftime("%Y%m%d_%H%M%S")
-    setattr(args, 'save_path',
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'experiments', args.model, args.save_name))
-    os.makedirs(args.save_path, exist_ok=True)
+    # setattr(args, 'save_path',
+    #         os.path.join(os.path.dirname(os.path.abspath(__file__)), 'experiments', args.model, args.save_name))
+    os.makedirs(
+        os.path.join(args.save_path, args.model),
+        exist_ok=True
+    )
 
     config_logging(os.path.join(args.save_path, f'{args.save_name}.log'))
     

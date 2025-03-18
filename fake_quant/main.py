@@ -82,8 +82,10 @@ def main():
         if args.a_groupsize > 0 and "llama" in args.model:
             down_proj_groupsize = utils.llama_down_proj_groupsize(model, args.a_groupsize)
         
-        for name in qlayers:            
+        for name in qlayers:
+            print(f"name of qlayer: {name}")
             layer_input_bits = args.a_bits
+
             layer_groupsize = args.a_groupsize
             layer_a_sym = not(args.a_asym)
             layer_a_clip = args.a_clip_ratio

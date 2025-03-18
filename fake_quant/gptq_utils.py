@@ -205,6 +205,8 @@ def gptq_fwrd(model, dataloader, dev, args):
             for name in subset:
                 print(f'{name}', end='  ', flush=True)
                 layer_weight_bits = args.w_bits
+                if f"{i}" in args.target_module and name in args.target_module:
+                    layer_weight_bits = args.w_bits - 1
                 layer_weight_sym = not(args.w_asym)
                 if 'lm_head' in name:
                     layer_weight_bits = 16
