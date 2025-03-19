@@ -206,8 +206,8 @@ def gptq_fwrd(model, dataloader, dev, args):
                 print(f'{name}', end='  ', flush=True)
                 layer_weight_bits = args.w_bits
                 for target in args.target_module:
-                    if f"{i}" in target and name in target:
-                        print(f"{name} uses different bitwidth")
+                    if f".{i}." in target and name in target:
+                        logging.info(f"{i}.{name} uses different bitwidth")
                         layer_weight_bits = args.w_bits - 1
                         break
                 layer_weight_sym = not(args.w_asym)
