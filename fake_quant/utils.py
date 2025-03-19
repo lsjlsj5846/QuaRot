@@ -80,7 +80,7 @@ def parser_gen():
     parser.add_argument('--eval_dataset', type=str, default='wikitext2',
                         help='Dataset for Evaluation (default: wikitext2)', choices=supported_datasets,)
     parser.add_argument('--hf_token', type=str, default=None)
-    parser.add_argument('--bsz', type=int, default=32,
+    parser.add_argument('--bsz', type=int, default=4,
                         help='Batch-size for PPL evaluation (default:32)')
 
 
