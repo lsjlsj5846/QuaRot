@@ -6,6 +6,7 @@ import numpy as np
 import os
 from datetime import datetime
 import logging
+from typing import List
 
 
 from accelerate import dispatch_model, infer_auto_device_map
@@ -74,7 +75,7 @@ def parser_gen():
     # General Arguments
     parser.add_argument('--model', type=str, default='meta-llama/Llama-2-7b-hf',
                         help='Model to load;')
-                        # help='Model to load;', choices=supported_models) 
+                        # help='Model to load;', choices=supported_models)
     parser.add_argument('--seed', type=int, default=0, help='Random Seed for HuggingFace and PyTorch')
     parser.add_argument('--eval_dataset', type=str, default='wikitext2',
                         help='Dataset for Evaluation (default: wikitext2)', choices=supported_datasets,)
@@ -193,6 +194,7 @@ def parser_gen():
         "--target_module",
         type=str,
         default="",
+        help="target module names using different bits"
     )
 
     args = parser.parse_args()
@@ -205,17 +207,18 @@ def parser_gen():
             if task not in lm_eval_utils.MultiChoice(tasks.ALL_TASKS):
                 raise ValueError(f"Invalid task: {task}")
 
+    args.model_name = args.model.split("/")[-1]
     # quant_type = f'w{args.w_bits}a{args.a_bits}_{args.rotate_mode}'
     if args.save_name is None:
         args.save_name = datetime.now().strftime("%Y%m%d_%H%M%S")
     # setattr(args, 'save_path',
     #         os.path.join(os.path.dirname(os.path.abspath(__file__)), 'experiments', args.model, args.save_name))
     os.makedirs(
-        os.path.join(args.save_path, args.model),
+        os.path.join(args.save_path, args.model_name),
         exist_ok=True
     )
 
-    config_logging(os.path.join(args.save_path, f'{args.save_name}.log'))
+    config_logging(os.path.join(args.save_path, args.model_name, f'{args.save_name}.log'))
     
     assert args.a_groupsize == args.w_groupsize, 'a_groupsize should be the same as w_groupsize!'
     assert args.k_pre_rope == False, 'Pre-RoPE quantization is not supported yet!'
@@ -226,6 +229,10 @@ def parser_gen():
 
     if args.wandb:
         assert args.wandb_id is not None and args.wandb_project is not None, 'WandB ID/project is not provided!'
+
+    if args.target_module:
+        target_modules = args.target_module.split(',')
+        args.target_module = target_modules
         
     logging.info('Arguments: ')
     logging.info(pprint.pformat(vars(args)))

@@ -83,9 +83,14 @@ def main():
             down_proj_groupsize = utils.llama_down_proj_groupsize(model, args.a_groupsize)
         
         for name in qlayers:
-            print(f"name of qlayer: {name}")
+            # print(f"name of qlayer: {name}")
             layer_input_bits = args.a_bits
-
+            for target in args.target_module:
+                target = "." + ".".join(target.split(".")[:-1])
+                if target in name:
+                    print(f"{name} uses different bitwidth")
+                    layer_input_bits = args.a_bits - 1
+                    break
             layer_groupsize = args.a_groupsize
             layer_a_sym = not(args.a_asym)
             layer_a_clip = args.a_clip_ratio
