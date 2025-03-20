@@ -208,7 +208,7 @@ def gptq_fwrd(model, dataloader, dev, args):
                 for target in args.target_module:
                     if f".{i}." in target and name in target:
                         logging.info(f"{i}.{name} uses different bitwidth")
-                        layer_weight_bits = args.w_bits - 1
+                        layer_weight_bits = args.w_bits - 2
                         break
                 layer_weight_sym = not(args.w_asym)
                 if 'lm_head' in name:

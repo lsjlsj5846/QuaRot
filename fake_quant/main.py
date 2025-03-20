@@ -89,7 +89,7 @@ def main():
                 target = "." + ".".join(target.split(".")[:-1])
                 if target in name:
                     print(f"{name} uses different bitwidth")
-                    layer_input_bits = args.a_bits - 1
+                    layer_input_bits = args.a_bits - 2
                     break
             layer_groupsize = args.a_groupsize
             layer_a_sym = not(args.a_asym)
