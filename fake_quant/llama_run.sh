@@ -7,9 +7,10 @@ MODEL_PTH=/mnt/models/llama/llama-${MODEL_VERSION}/${MODEL_NAME}
 
 TARGET_LAYER=".${4}"
 TARGET_MODULE="${5}"
+TARGET_BIT="${6-3}"
 
 if [ ! -z ${TARGET_MODULE} ]; then
-    SAVE_NAME="${MODEL_NAME}-${4}-${TARGET_MODULE}"
+    SAVE_NAME="${MODEL_NAME}-${4}-${TARGET_MODULE}-${TARGET_BIT}bit"
     if [ ${TARGET_MODULE} == "mha" ]; then
         TARGET_MODULES="${TARGET_LAYER}.self_attn.q_proj.module,${TARGET_LAYER}.self_attn.k_proj.module,${TARGET_LAYER}.self_attn.v_proj.module,${TARGET_LAYER}.self_attn.o_proj.module"
     elif [ ${TARGET_MODULE} == "mlp" ]; then
@@ -33,4 +34,5 @@ CUDA_VISIBLE_DEVICES=${GPU} python main.py \
     --w_bits 4 \
     --w_clip \
     --target_module "${TARGET_MODULES}" \
-    --save_name ${SAVE_NAME} \
+    --target_bit ${TARGET_BIT} \
+    --save_name "${SAVE_NAME}" \

@@ -1,13 +1,16 @@
-import utils
 import torch
-import model_utils
-import data_utils
+import logging
 import transformers
-import quant_utils
-import rotation_utils
-import gptq_utils
+
+import utils
+import data_utils
 import eval_utils
+import gptq_utils
+import model_utils
+import quant_utils
 import hadamard_utils
+import rotation_utils
+
 
 def main():
     args = utils.parser_gen()
@@ -83,14 +86,22 @@ def main():
             down_proj_groupsize = utils.llama_down_proj_groupsize(model, args.a_groupsize)
         
         for name in qlayers:
-            # print(f"name of qlayer: {name}")
             layer_input_bits = args.a_bits
+
             for target in args.target_module:
-                target = "." + ".".join(target.split(".")[:-1])
+                target = ".".join(target.split(".")[:-1])
                 if target in name:
-                    print(f"{name} uses different bitwidth")
-                    layer_input_bits = args.a_bits - 2
+                    logging.info(f"{name} uses different bitwidth: {args.target_bit}-bit")
+                    layer_input_bits = args.target_bit
                     break
+            
+            # if "self_attn" in name:
+            #     i = int(name.split(".")[2])
+            #     layer_input_bits = args.mha_config[i]
+            # elif "mlp" in name:
+            #     i = int(name.split(".")[2])
+            #     layer_input_bits = args.mlp_config[i]
+            
             layer_groupsize = args.a_groupsize
             layer_a_sym = not(args.a_asym)
             layer_a_clip = args.a_clip_ratio

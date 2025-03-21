@@ -153,7 +153,10 @@ def parser_gen():
                         help='Pre-RoPE quantization for K-cache (not Supported yet!)')
     parser.add_argument('--k_clip_ratio', type=float, default=1.0,
         help='Clip ratio for k-cache quantization. new_max = max * clip_ratio')
-
+    
+    parser.add_argument('--target_bit', type=int, default=3, help="target bit for mixed precision quantization")
+    parser.add_argument('--mha_config', type=List[int], nargs="+", default=None, help="mixed bit quantization's configuration (MHA)")
+    parser.add_argument('--mlp_config', type=List[int], nargs="+", default=None, help="mixed bit quantization's configuration (MLP)")
 
     # Save/Load Quantized Model Arguments
     parser.add_argument('--load_qmodel_path', type=str, default=None,
@@ -214,11 +217,11 @@ def parser_gen():
     # setattr(args, 'save_path',
     #         os.path.join(os.path.dirname(os.path.abspath(__file__)), 'experiments', args.model, args.save_name))
     os.makedirs(
-        os.path.join(args.save_path, args.model_name),
+        os.path.join(args.save_path, args.model_name, f"{args.target_bit}bit"),
         exist_ok=True
     )
 
-    config_logging(os.path.join(args.save_path, args.model_name, f'{args.save_name}.log'))
+    config_logging(os.path.join(args.save_path, args.model_name, f"{args.target_bit}bit", f'{args.save_name}.log'))
     
     assert args.a_groupsize == args.w_groupsize, 'a_groupsize should be the same as w_groupsize!'
     assert args.k_pre_rope == False, 'Pre-RoPE quantization is not supported yet!'

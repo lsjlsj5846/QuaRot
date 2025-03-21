@@ -205,11 +205,18 @@ def gptq_fwrd(model, dataloader, dev, args):
             for name in subset:
                 print(f'{name}', end='  ', flush=True)
                 layer_weight_bits = args.w_bits
+
                 for target in args.target_module:
                     if f".{i}." in target and name in target:
-                        logging.info(f"{i}.{name} uses different bitwidth")
-                        layer_weight_bits = args.w_bits - 2
+                        logging.info(f"{i}.{name} uses different bitwidth: {args.target_bit}-bit")
+                        layer_weight_bits = args.target_bit
                         break
+                
+                # if "self_attn" in name:
+                #     layer_weight_bits = args.mha_config[i]
+                # elif "mlp" in name:
+                #     layer_weight_bits = args.mlp_config[i]
+                
                 layer_weight_sym = not(args.w_asym)
                 if 'lm_head' in name:
                     layer_weight_bits = 16
