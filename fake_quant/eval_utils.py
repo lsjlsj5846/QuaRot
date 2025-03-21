@@ -148,5 +148,6 @@ def evaluator(model, testenc, dev, args):
     nlls_tensor = torch.cat(nlls)
     ppl = torch.exp(nlls_tensor.mean())
     model.config.use_cache = use_cache
-    logging.info(f'\n{args.eval_dataset.upper()} PPL: {ppl.item():.3f}')
+    # logging.info(f'\n{args.eval_dataset.upper()} PPL: {ppl.item():.3f}')
+    logging.info(f'\n{ppl.item():.3f}')
     return ppl.item()
